@@ -11,6 +11,7 @@ using namespace std;
 int decode(uint32_t inst);
 
 int main(int argc, char *argv[]) {
+    cout<<"instr: "<<sizeof(instr)<<" status: "<<sizeof(status)<<endl;
     assert(sizeof(instr) == 4);
     assert(sizeof(status) == 4);
 
