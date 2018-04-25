@@ -12,8 +12,8 @@ int decode(uint32_t inst);
 
 int main(int argc, char *argv[]) {
     cout<<"instr: "<<sizeof(instr)<<" status: "<<sizeof(status)<<endl;
-    assert(sizeof(instr) == 4);
-    assert(sizeof(status) == 4);
+    //assert(sizeof(instr) == 4);
+    //assert(sizeof(status) == 4);
 
     if(argc != 2) {
         return 1;
@@ -51,6 +51,7 @@ int decode(uint32_t inst) {
     i.val = inst;
     cout<<"\t";
     int ret = 0;
+    /*
     switch(i.id) {
         case 0:
             cout<<"ALU stuff ";
@@ -78,5 +79,13 @@ int decode(uint32_t inst) {
             cout<<"CoProcessor data transfer/SWI ";
             break;
     }
+    */
+    for(int j=0;j<19;j++) {
+        if((i.val & instr_mask[j]) == instr_match[j]) {
+            cout<<dec<<j<<": "<<instr_names[j]<<"\t";
+            ret++;
+        }
+    }
+    cout<<"Found "<<ret<<" matches"<<endl;
     return ret;
 }
