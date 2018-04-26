@@ -40,7 +40,7 @@ int main(int argc, char *argv[]) {
         cout.fill('0');
         cout<<(*(reinterpret_cast<uint32_t *>(&data[i])));
         int result = decode_a(*(reinterpret_cast<uint32_t *>(&data[i])));
-        if(!result) {
+        if(result < 0) {
             cout<<"\tUNKNOWN"<<endl;
         }
     }
@@ -51,43 +51,14 @@ int decode_a(uint32_t inst) {
     instr i;
     i.val = inst;
     cout<<"\t";
-    int ret = 0;
-    /*
-    switch(i.id) {
-        case 0:
-            cout<<"ALU stuff ";
-            break;
-        case 1:
-            cout<<"Data FSR ";
-            break;
-        case 2:
-            cout<<"<Invalid> ";
-            break;
-        case 3:
-            cout<<"Single data transfer ";
-            break;
-        case 4:
-            cout<<"Block data transfer ";
-            break;
-        case 5:
-            cout<<"B/BL "<<cond_str[i.cond]<<endl;
-            ret = 1;
-            break;
-        case 6:
-            cout<<"CoProcessor data transfer ";
-            break;
-        case 7:
-            cout<<"CoProcessor data transfer/SWI ";
-            break;
-    }
-    */
-    for(int j=0;j<19;j++) {
+    int ret = -1;
+    for(int j=0;j<22;j++) {
         if((i.val & instr_mask[j]) == instr_match[j]) {
-            cout<<dec<<j<<": "<<instr_names[j]<<"\t";
-            ret++;
+            cout<<dec<<j<<": "<<instr_names[j]<<endl;
+            ret = j;
+            break;
         }
     }
-    cout<<"Found "<<ret<<" matches"<<endl;
     return ret;
 }
 

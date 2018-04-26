@@ -1,0 +1,27 @@
+Note: The order of these checks is important (less-ambiguous instructions are ruled out first).
+      When an instruction is fetched, AND it with the specified bits, then check for equality with the "matching value".
+
+
+                            |31 30 29 28 27 26 25 24 23 22 21 20 19 18 17 16 15 14 13 12 11 10 09 08 07 06 05 04 03 02 01 00| Mask for specified bits | Matching value
+BX                          | C  o  n  d| 0  0  0  1  0  0  1  0  1  1  1  1  1  1  1  1  1  1  1  1  0  0  0  1|     Rn    |   0x0FFFFFF0              0x012FFF10
+MRS                         | C  o  n  d| 0  0  0  1  0|Ps| 0  0  1  1  1  1|     Rd    | 0  0  0  0  0  0  0  0  0  0  0  0|   0x0FBF0FFF              0x010F0000
+MSR(reg to PSR)             | C  o  n  d| 0  0  0  1  0|Pd| 1  0  1  0  0  1| 1  1  1  1| 0  0  0  0  0  0  0  0|     Rm    |   0x0FBFFFF0              0x0129F000
+MSR(reg to PSR flags)       | C  o  n  d| 0  0  0  1  0|Pd| 1  0  1  0  0  0  1  1  1  1| 0  0  0  0  0  0  0  0|     Rm    |   0x0FBFFFF0              0x0128F000
+MSR(immediate to PSR flags) | C  o  n  d| 0  0  1  1  0|Pd| 1  0  1  0  0  0  1  1  1  1|Rotation   |     8-bit immediate   |   0x0FBFF000              0x0328F000
+ALU Ops (immed-reg shift)   | C  o  n  d| 0  0  0| C  o  d  e| S|     Rn    |     Rd    | shift amount | type| 0|     Rm    |   0x0E000010              0x00000000
+ALU Ops (reg-reg shift)     | C  o  n  d| 0  0  0| C  o  d  e| S|     Rn    |     Rd    |     Rs    | 0| type| 1|     Rm    |   0x0E000090              0x00000010
+ALU Ops (immed shift)       | C  o  n  d| 0  0  1| C  o  d  e| S|     Rn    |     Rd    |Rotation   |     8-bit immediate   |   0x0E000000              0x02000000
+Multiply                    | C  o  n  d| 0  0  0  0  0  0| A| S|     Rd    |     Rn    |     Rs    | 1  0  0  1|     Rm    |   0x0FC000F0              0x00000090
+Multiply Long               | C  o  n  d| 0  0  0  0  1| U| A| S|   RdHi    |   RdLo    |     Rs    | 1  0  0  1|     Rm    |   0x0F8000F0              0x00800090
+LDR, STR (unsigned immed)   | C  o  n  d| 0  1| 0| P| U| B| W| L|     Rn    |     Rd    | U  n  s  i  g  n  e  d  1 2 - bit |   0x0E000000              0x04000000
+LDR, STR (immed-reg shift)  | C  o  n  d| 0  1| 1| P| U| B| W| L|     Rn    |     Rd    | shift amount | type| 0|     Rm    |   0x0E000010              0x06000000
+SWP                         | C  o  n  d| 0  0  0  1  0| B| 0  0|     Rn    |     Rd    | 0  0  0  0  1  0  0  1|     Rm    |   0x0FB00FF0              0x01000090
+LDRH, STRH, LDRSB, LDRSH    | C  o  n  d| 0  0  0| P| U| 0| W| L|     Rn    |     Rd    | 0  0  0  0  1| S| H| 1|     Rm    |   0x0E400F90              0x00000090
+LDRH, STRH, LDRSB, LDRSH    | C  o  n  d| 0  0  0| P| U| 1| W| L|     Rn    |     Rd    | OffsetHi  | 1| S| H| 1| OffsetLo  |   0x0E400090              0x00400090
+LDM, STM                    | C  o  n  d| 1  0  0| P| U| S| W| L|     Rn    | 16-bit field specifying which of the registers|   0x0E000000              0x08000000
+B/BL                        | C  o  n  d| 1  0  1| L|            2  4  -  b  i  t     o  f  f  s  e  t                      |   0x0E000000              0x0A000000
+SWI                         | C  o  n  d| 1  1  1  1|        24-bit "comment field"                                         |   0x0F000000              0x0F000000
+CDP                         | C  o  n  d| 1  1  1  0| CP Opc    |    CRn    |    CRd    |    CP#    |   CP   | 0|    CRm    |   0x0F000010              0x0E000000
+LDC/STC                     | C  o  n  d| 1  1  0| P| U| N| W| L|     Rn    |    CRd    |    CP#    |    Offset             |   0x0E000000              0x0C000000
+MRC, MCR                    | C  o  n  d| 1  1  1  0| CP Opc | L|    CRn    |     Rd    |    CP#    |   CP   | 1|    CRm    |   0x0F000010              0x0E000010
+Undefined                   | C  o  n  d| 0  1  1|                                                           | 1|           |   0x0E000010              0x06000010
