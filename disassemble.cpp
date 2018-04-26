@@ -8,7 +8,8 @@
 
 using namespace std;
 
-int decode(uint32_t inst);
+int decode_a(uint32_t inst);
+int decode_t(uint16_t inst);
 
 int main(int argc, char *argv[]) {
     cout<<"instr: "<<sizeof(instr)<<" status: "<<sizeof(status)<<endl;
@@ -38,7 +39,7 @@ int main(int argc, char *argv[]) {
         cout.width(8);
         cout.fill('0');
         cout<<(*(reinterpret_cast<uint32_t *>(&data[i])));
-        int result = decode(*(reinterpret_cast<uint32_t *>(&data[i])));
+        int result = decode_a(*(reinterpret_cast<uint32_t *>(&data[i])));
         if(!result) {
             cout<<"\tUNKNOWN"<<endl;
         }
@@ -46,7 +47,7 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
-int decode(uint32_t inst) {
+int decode_a(uint32_t inst) {
     instr i;
     i.val = inst;
     cout<<"\t";
@@ -87,5 +88,10 @@ int decode(uint32_t inst) {
         }
     }
     cout<<"Found "<<ret<<" matches"<<endl;
+    return ret;
+}
+
+int decode_t(uint16_t inst) {
+    int ret = 0;
     return ret;
 }
