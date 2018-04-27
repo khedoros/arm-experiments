@@ -25,3 +25,29 @@ CDP                         | C  o  n  d| 1  1  1  0| CP Opc    |    CRn    |   
 LDC/STC                     | C  o  n  d| 1  1  0| P| U| N| W| L|     Rn    |    CRd    |    CP#    |    Offset             |   0x0E000000              0x0C000000
 MRC, MCR                    | C  o  n  d| 1  1  1  0| CP Opc | L|    CRn    |     Rd    |    CP#    |   CP   | 1|    CRm    |   0x0F000010              0x0E000010
 Undefined                   | C  o  n  d| 0  1  1|                                                           | 1|           |   0x0E000010              0x06000010
+
+
+
+
+Thumb
+|15 14 13 12 11 10 09 08 07 06 05 04 03 02 01 00|
+| 0  0  0| O  p| Offset5      |   Rs   |   Rd   | format 01, move shifted register
+| 0  0  0  1  1  1|Op|Rn/Off3 |   Rs   |   Rd   | format 02, add and subtract
+| 0  0  1| O  p|   Rd   |     Offset8           | format 03, mov, cmp, add, sub immediate
+| 0  1  0  0  0  0|    Op     |   Rs   |   Rd   | format 04, ALU operation
+| 0  1  0  0  0  1| O  p|H1|H2|  Rs/Hs |  Rd/Hd | format 05, Hi Reg ops and BX
+| 0  1  0  0  1|    Rd  | 8-bit word            | format 06, PC relative load
+| 0  1  0  1| L| B| 0|   Ro   |   Rb   |   Rd   | format 07, load and store rel offset
+| 0  1  0  1| H| S| 1|   Ro   |   Rb   |   Rd   | format 08, load+store sign-extended byte + hwd
+| 0  1  1| B| L|   Offset5    |   Rb   |   Rd   | format 09, load+store immediate offset
+| 1  0  0  0| L|   Offset5    |   Rb   |   Rd   | format 10, load+store half-word
+| 1  0  0  1| L|    Rd  | 8-bit word            | format 11, SP-relative load+store
+| 1  0  1  0|Sp|    Rd  | 8-bit word            | format 12, Load address
+| 1  0  1  1  0  0  0  0| S|    S-Word7         | format 13, Add offset to SP
+| 1  0  1  1| L| 1  0| R|      RegisterList     | format 14, Push and pop registers
+| 1  1  0  0| L|    Rb  |      RegisterList     | format 15, multiple load+store
+| 1  1  0  1|  Cond     |      Soffset8         | format 16, Conditional branch
+| 1  1  0  1  1  1  1  1|      Value8           | format 17, Software Interrupt
+| 1  1  1  0  0|      Offset 11                 | format 18, unconditional branch
+| 1  1  1  1  H|               Offset           | format 19, Long branch with link
+
