@@ -45,6 +45,7 @@ char alu_ops[][4] {
     "TST", "TEQ", "CMP", "CMN",
     "ORR", "MOV", "BIC", "MVN"};
 
+char shift_type[][4] {"LSL", "LSR", "ASR", "ROR"};
 
 uint32_t instr_mask[] = { 0x0FFFFFF0,
                           0x0FBF0FFF,
