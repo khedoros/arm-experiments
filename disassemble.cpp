@@ -5,7 +5,7 @@
 #include<cassert>
 #include<string>
 
-#include "arm.h"
+#include "arm-defs.h"
 
 using namespace std;
 

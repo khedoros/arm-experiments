@@ -1,8 +1,14 @@
 #pragma once
 #include<cstdint>
-#include "arm.h"
+#include "arm-defs.h"
 
-class cpu {
+class Arm7tdmi {
+    public:
+    arm7tdmi();
+    int run(uint64_t run_to);
+    private:
+    uint32_t decode();
+    void execute();
     enum state {
         ARM,
         THUMB
@@ -54,4 +60,11 @@ class cpu {
 
     mode m;
     state s;
+
+    uint64_t cycle;
+    bool fetched; //An instruction was previously fetched, and is ready to be decoded
+    uint32_t fetched_instr;
+    bool decoded; //An instruction was previously decoded, and is ready to be executed
+    uint32_t decoded_instr;
+    uint32_t decoded_instr_type;
 };
