@@ -116,6 +116,66 @@ char instr_names[][40] = { "BX                         ",
                            "MRC, MCR                   ",
                            "Undefined                  "};
 
+uint16_t instr_mask_t[] = { 0xF800,
+                            0xE000,
+                            0xE000,
+                            0xFC00,
+                            0xFC00,
+                            0xF800,
+                            0xF200,
+                            0xF200,
+                            0xE000,
+                            0xF000,
+                            0xF000,
+                            0xF000,
+                            0xFF00,
+                            0xF600,
+                            0xF000,
+                            0xFF00,
+                            0xF000,
+                            0xF800,
+                            0xF000};
+
+uint16_t instr_match_t[] = { 0x1800,
+                             0x0000,
+                             0x2000,
+                             0x4000,
+                             0x4400,
+                             0x4800,
+                             0x5000,
+                             0x5200,
+                             0x6000,
+                             0x8000,
+                             0x9000,
+                             0xA000,
+                             0xB000,
+                             0xB400,
+                             0xC000,
+                             0xDF00,
+                             0xD000,
+                             0xE000,
+                             0xF000};
+
+char instr_names_t[][40] = { "Add/Subtract reg/immed",
+                             "Mov shifted register",
+                             "MOV, ADD, SUB, CMP",
+                             "reg-reg ALU operations",
+                             "ADD, CMP, MOV, BX (hi+low regs)",
+                             "LDR immediate",
+                             "LDR,STR reg",
+                             "LDR,STR sign-extnd byte/half-word reg",
+                             "LDR,STR immed offset",
+                             "LDR,STR half-word",
+                             "LDR,STR SP-relative",
+                             "Load Address",
+                             "Add offset to SP",
+                             "Push/pop registers",
+                             "Multiple LDR,STR",
+                             "Software Interrupt",
+                             "Conditional branch",
+                             "Unconditional branch",
+                             "Long branch+link"};
+
 union instr {
     struct {
         unsigned reg3:4;
@@ -127,6 +187,20 @@ union instr {
         unsigned cond:4;
     };
     uint32_t val:32;
+};
+
+union instr_t {
+    struct {
+        unsigned reg2:3;
+        unsigned reg5:3;
+        unsigned reg8:3;
+        unsigned top7:7;
+    };
+    struct {
+        unsigned val7:8;
+        unsigned top8:8;
+    };
+    uint16_t val:16;
 };
 
 struct status {
