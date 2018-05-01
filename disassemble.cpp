@@ -64,8 +64,16 @@ int decode_a(uint32_t inst, uint32_t offset) {
     return ret;
 }
 
-int decode_t(uint16_t inst) {
-    int ret = 0;
+int decode_t(uint16_t inst, uint32_t offset) {
+    cout<<"\t";
+    int ret = -1;
+    for(int j=0;j<22;j++) {
+        if((inst & instr_mask_t[j]) == instr_match_t[j]) {
+            cout<<dec<<j<<": "<<instr_str_t(inst, offset, j)<<endl;
+            ret = j;
+            break;
+        }
+    }
     return ret;
 }
 
@@ -263,4 +271,6 @@ string instr_str_a(uint32_t op, uint32_t offset, int format) {
     return string("");
 }
 
-string instr_str_t(uint16_t opcode, uint32_t offset, int format) {}
+string instr_str_t(uint16_t opcode, uint32_t offset, int format) {
+    return string(instr_names_t[format]);
+}
