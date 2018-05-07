@@ -1,5 +1,6 @@
 #pragma once
 
-Gba_rom {
-
+class Gba_rom {
+public:
+    Gba_rom();
 };
