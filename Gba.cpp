@@ -8,6 +8,15 @@ Gba::Gba(string bios_file, string rom_file) : valid(false) {
     if(bus->loaded()) {
         valid = true;
     }
+
+    uint64_t cycle = 0;
+    uint64_t cycle_chunk = 16384;
+    while(1==1) {
+        cpu->run(cycle + cycle_chunk);
+        //TODO: Run GPU
+        //TODO: Run APU
+        cycle += cycle_chunk;
+    }
 }
 
 bool Gba::loaded() {

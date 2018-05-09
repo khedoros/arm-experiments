@@ -1,4 +1,5 @@
 #include<algorithm>
+#include<iostream>
 #include "Arm7tdmi.h"
 #include "gba_types.h"
 
@@ -36,6 +37,7 @@ int Arm7tdmi::runa(uint64_t run_to) {
         uint64_t cycled = decodea();
         uint64_t cyclee = executea();
         cycle += max(max(cyclef, cycled), cyclee);
+        r[15].ureg += 4;
     }
 }
 
@@ -54,10 +56,13 @@ int Arm7tdmi::runt(uint64_t run_to) {
         uint64_t cycled = decodet();
         uint64_t cyclee = executet();
         cycle += max(max(cyclef, cycled), cyclee);
+        r[15].ureg += 4;
     }
 }
+
 uint64_t Arm7tdmi::fetcha() {
     read_response inst = bus->read32(r[15].ureg, cycle);
+    cout<<hex<<r[15].ureg<<":\t"<<inst.data.word<<endl;
     fetched = true;
     fetched_instr = inst.data.word;
     return inst.time;

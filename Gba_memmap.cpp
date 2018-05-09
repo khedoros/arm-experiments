@@ -34,6 +34,12 @@ read_response Gba_memmap::read32(uint32_t addr, uint64_t cycle) {
     addr &= 0xFFFFFFFC;
     switch(addr & 0xFF000000) {
         case 0x00000000:
+            if(addr < 0x4000) {
+                return read_response{bios[addr>>2], 1};
+            }
+            else {
+                return read_response{word{.word = 0}, 1};
+            }
             break;
         case 0x02000000:
             break;
