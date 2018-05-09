@@ -1,10 +1,12 @@
 #pragma once
 #include<cstdint>
+#include<memory>
 #include "arm-defs.h"
+#include "Gba_memmap.h"
 
 class Arm7tdmi {
     public:
-    arm7tdmi();
+    Arm7tdmi(std::shared_ptr<Gba_memmap>& b);
     int run(uint64_t run_to);
     private:
     uint32_t decode();
@@ -13,6 +15,8 @@ class Arm7tdmi {
         ARM,
         THUMB
     };
+
+    std::shared_ptr<Gba_memmap> bus;
 
     enum mode {
         OLD_USR = 0,

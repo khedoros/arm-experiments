@@ -1,7 +1,11 @@
 #include "Gba_memmap.h"
 
-Gba_memmap::Gba_memmap(std::string& bios_file, std::string& rom_file) {
+Gba_memmap::Gba_memmap(std::string& bios_file, std::string& rom_file) : rom(rom_file) {
 
+}
+
+bool Gba_memmap::loaded() {
+    return rom.loaded();
 }
 
 read_response Gba_memmap::read32(uint32_t addr, uint64_t cycle) {

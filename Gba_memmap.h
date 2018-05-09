@@ -1,8 +1,10 @@
+#pragma once
+
 #include<cstdint>
 #include<array>
 #include<string>
-#include "arm-defs.h"
 #include "Gba_rom.h"
+#include "gba_types.h"
 
 /*  I/O register maps (very rough view):
       LCD I/O between 4000000 and 4000056
@@ -30,6 +32,7 @@ class Gba_memmap {
                                        //0x0E000000 Game Pak SRAM               (up to 64KB), 8-bit bus width
 public:
     Gba_memmap(std::string& bios_file, std::string& rom_file);
+    bool loaded();
     read_response read32(uint32_t addr, uint64_t cycle);
     read_response read16(uint32_t addr, uint64_t cycle);
     read_response read8(uint32_t addr, uint64_t cycle);
