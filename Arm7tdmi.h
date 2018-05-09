@@ -8,9 +8,15 @@ class Arm7tdmi {
     public:
     Arm7tdmi(std::shared_ptr<Gba_memmap>& b);
     int run(uint64_t run_to);
+    int runa(uint64_t run_to);
+    int runt(uint64_t run_to);
     private:
-    uint32_t decode();
-    void execute();
+    uint64_t fetcha();
+    uint64_t fetcht();
+    uint64_t decodea();
+    uint64_t decodet();
+    uint64_t executea();
+    uint64_t executet();
     enum state {
         ARM,
         THUMB
@@ -68,7 +74,13 @@ class Arm7tdmi {
     uint64_t cycle;
     bool fetched; //An instruction was previously fetched, and is ready to be decoded
     uint32_t fetched_instr;
+    bool decode_ready; //An instruction was previously fetched, and is ready to be decoded
+    uint32_t to_decode; //An instruction ready to be decoded
     bool decoded; //An instruction was previously decoded, and is ready to be executed
-    uint32_t decoded_instr;
-    uint32_t decoded_instr_type;
+    uint32_t decoded_instr; //An instruction ready to be executed
+    uint32_t decoded_instr_type; //The type of that instruction
+    uint32_t to_execute;
+    uint32_t to_execute_type;
+    bool execute_ready;
+
 };
