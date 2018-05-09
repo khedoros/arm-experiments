@@ -19,6 +19,7 @@
 
 class Gba_memmap {
 
+    bool bios_valid;
     std::array<word, 0x1000> bios;     //0x00000000 BIOS ROM           (16KB), 32-bit bus width
     std::array<word, 0x10000> wram;    //0x02000000 On-board work RAM  (256KB), 16-bit bus width
     std::array<word, 0x2000> cpu_wram; //0x03000000 On-CPU work RAM    (32KB), 32-bit bus width
