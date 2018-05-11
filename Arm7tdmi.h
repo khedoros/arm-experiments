@@ -4,19 +4,26 @@
 #include "arm-defs.h"
 #include "Gba_memmap.h"
 
+#define CALL_MEMBER_FN(object,ptrToMember)  ((object).*(ptrToMember))
+
 class Arm7tdmi {
-    public:
+public:
+    typedef uint64_t (Arm7tdmi::*Arm7OpPtr)(uint32_t);
     Arm7tdmi(std::shared_ptr<Gba_memmap>& b);
     int run(uint64_t run_to);
     int runa(uint64_t run_to);
     int runt(uint64_t run_to);
-    private:
+private:
     uint64_t fetcha();
     uint64_t fetcht();
     uint64_t decodea();
     uint64_t decodet();
     uint64_t executea();
     uint64_t executet();
+
+    Arm7OpPtr op_map[256 * 16];
+
+    uint64_t op_noop();
     enum state {
         ARM,
         THUMB
