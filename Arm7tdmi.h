@@ -6,9 +6,11 @@
 
 #define CALL_MEMBER_FN(object,ptrToMember)  ((object).*(ptrToMember))
 
+class Arm7tdmi;
+typedef uint64_t (Arm7tdmi::*Arm7OpPtr)(uint32_t);
+
 class Arm7tdmi {
 public:
-    typedef uint64_t (Arm7tdmi::*Arm7OpPtr)(uint32_t);
     Arm7tdmi(std::shared_ptr<Gba_memmap>& b);
     int run(uint64_t run_to);
     int runa(uint64_t run_to);
@@ -23,7 +25,16 @@ private:
 
     Arm7OpPtr op_map[256 * 16];
 
-    uint64_t op_noop();
+    void flush_pipeline();
+
+    uint64_t op_noop(uint32_t);
+    uint64_t op_b(uint32_t);
+    uint64_t op_bl(uint32_t);
+    uint64_t op_bx(uint32_t);
+
+    static const uint32_t inst_mask[];
+    static const uint32_t inst_mask_match[];
+    static const Arm7OpPtr inst_mask_ops[];
     enum state {
         ARM,
         THUMB

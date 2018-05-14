@@ -106,4 +106,102 @@ uint64_t Arm7tdmi::executet() {
     return 1;
 }
 
+void Arm7tdmi::flush_pipeline() {
+    fetched = false;
+    decode_ready = false;
+    decoded = false;
+    execute_ready = false;
+}
 
+uint64_t Arm7tdmi::op_noop(uint32_t opcode) {
+    return 1;
+}
+
+uint64_t Arm7tdmi::op_b(uint32_t opcode) {
+    union format {
+        struct { 
+            unsigned offset:24;
+            unsigned identifier:4;
+            unsigned condition:4;
+        };
+        uint32_t val;
+    } f;
+    f.val = opcode;
+    flush_pipeline();
+    int32_t offset = f.offset<<2;
+    offset |= ((offset & (1<<25)) * 0x7f); //Check 26th bit, fill in the 6 bits above it if it's set
+    if(s == THUMB) {
+        r[15].ureg += offset;
+    }
+    else {
+        r[15].ureg += offset;
+    }
+    return 3; //2S + 1N cycles
+}
+
+uint64_t Arm7tdmi::op_bl(uint32_t opcode) {
+    union format {
+        struct { 
+            unsigned offset:24;
+            unsigned identifier:4;
+            unsigned condition:4;
+        };
+        uint32_t val;
+    } f;
+    f.val = opcode;
+    flush_pipeline();
+    int32_t offset = f.offset<<2;
+    offset |= ((offset & (1<<25)) * 0x7f); //Check 26th bit, fill in the 6 bits above it if it's set
+    if(s == THUMB) {
+        r[14].ureg = r[15].ureg - 2;
+        r[15].ureg += offset;
+    }
+    else {
+        r[14].ureg = r[15].ureg - 4;
+        r[15].ureg += offset;
+    }
+    return 3; //2S + 1N cycles
+}
+
+uint64_t Arm7tdmi::op_bx(uint32_t opcode) {
+    union format {
+        struct { 
+            unsigned reg:4;
+            unsigned identifier:24;
+            unsigned condition:4;
+        };
+        uint32_t val;
+    } f;
+    f.val = opcode;
+    flush_pipeline();
+    if(r[f.reg].ureg & 1) {
+        r[15].ureg = (r[f.reg].ureg & 0xfffffffe);
+        s = THUMB;
+    }
+    else {
+        r[15].ureg = (r[f.reg].ureg & 0xfffffffc);
+        s = ARM;
+    }
+    return 3; //2S + 1N cycles
+}
+
+const uint32_t Arm7tdmi::inst_mask[] = {
+    0xfff, //BX
+    0xf00, //B
+    0xf00, //BL
+    0x000  //Unrecognized/Nop
+};
+
+const uint32_t Arm7tdmi::inst_mask_match[] = {
+    0x121, //BX
+    0xa00, //B
+    0xb00, //BL
+    0x000  //Unrecognized/Nop
+};
+
+const Arm7OpPtr Arm7tdmi::inst_mask_ops[] = {
+    &Arm7tdmi::op_bx,
+    &Arm7tdmi::op_b,
+    &Arm7tdmi::op_bl,
+    &Arm7tdmi::op_noop
+};
