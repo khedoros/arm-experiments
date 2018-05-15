@@ -4,7 +4,8 @@
 #include "arm-defs.h"
 #include "Gba_memmap.h"
 
-#define CALL_MEMBER_FN(object,ptrToMember)  ((object).*(ptrToMember))
+#define CALL_MEMBER_FN(object,ptrToMember)  ((object)->*(ptrToMember))
+//#define CALL_MEMBER_FN(object,ptrToMember)  ((object)->(ptrToMember))
 
 class Arm7tdmi;
 typedef uint64_t (Arm7tdmi::*Arm7OpPtr)(uint32_t);
@@ -35,6 +36,7 @@ private:
     static const uint32_t inst_mask[];
     static const uint32_t inst_mask_match[];
     static const Arm7OpPtr inst_mask_ops[];
+    static const int op_count;
     enum state {
         ARM,
         THUMB

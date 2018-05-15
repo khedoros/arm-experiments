@@ -6,7 +6,14 @@
 using namespace std;
 
 Arm7tdmi::Arm7tdmi(shared_ptr<Gba_memmap>& b) : bus(b) {
-
+    for(int inst_ptr = 0; inst_ptr < 4096; inst_ptr++) {
+        for(int candidate = 0; candidate < op_count; candidate++) {
+            if((inst_ptr & inst_mask[candidate]) == inst_mask_match[candidate]) {
+                op_map[inst_ptr] = inst_mask_ops[candidate];
+                break;
+            }
+        }
+    }
 }
 
 int Arm7tdmi::run(uint64_t run_to) {
@@ -56,7 +63,7 @@ int Arm7tdmi::runt(uint64_t run_to) {
         uint64_t cycled = decodet();
         uint64_t cyclee = executet();
         cycle += max(max(cyclef, cycled), cyclee);
-        r[15].ureg += 4;
+        r[15].ureg += 2;
     }
 }
 
@@ -73,6 +80,7 @@ uint64_t Arm7tdmi::decodea() {
         return 0;
     }
     //TODO: Actually decode the instruction
+    decoded_instr = to_decode;
     return 1;
 }
 
@@ -80,8 +88,13 @@ uint64_t Arm7tdmi::executea() {
     if(!execute_ready) {
         return 0;
     }
-    //TODO: Actually do the work
-    return 1;
+
+    //TODO: Make sure condition is correct to execute the instruction
+    if(/*condition stuff*/true) {
+        uint32_t short_form = ((to_execute & 0x0ff00000)>>16) | ((to_execute & 0x000000f0)>>4);
+        return CALL_MEMBER_FN(this, op_map[short_form])(to_execute);
+    }
+    return 0;
 }
 uint64_t Arm7tdmi::fetcht() {
     read_response inst = bus->read16(r[15].ureg, cycle);
@@ -95,6 +108,7 @@ uint64_t Arm7tdmi::decodet() {
         return 0;
     }
     //TODO: Actually decode
+    decoded_instr = to_decode;
     return 1;
 }
 
@@ -102,6 +116,7 @@ uint64_t Arm7tdmi::executet() {
     if(!execute_ready) {
         return 0;
     }
+    cout<<"Haha, thumb mode"<<endl;
     //TODO: Execute
     return 1;
 }
@@ -114,6 +129,7 @@ void Arm7tdmi::flush_pipeline() {
 }
 
 uint64_t Arm7tdmi::op_noop(uint32_t opcode) {
+    printf("nop: %08x\n", opcode);
     return 1;
 }
 
@@ -129,6 +145,7 @@ uint64_t Arm7tdmi::op_b(uint32_t opcode) {
     f.val = opcode;
     flush_pipeline();
     int32_t offset = f.offset<<2;
+    printf("b %xn", offset);
     offset |= ((offset & (1<<25)) * 0x7f); //Check 26th bit, fill in the 6 bits above it if it's set
     if(s == THUMB) {
         r[15].ureg += offset;
@@ -205,3 +222,5 @@ const Arm7OpPtr Arm7tdmi::inst_mask_ops[] = {
     &Arm7tdmi::op_bl,
     &Arm7tdmi::op_noop
 };
+
+const int Arm7tdmi::op_count = 4;
