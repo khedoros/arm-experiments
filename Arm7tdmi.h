@@ -32,6 +32,101 @@ private:
     uint64_t op_b(uint32_t);
     uint64_t op_bl(uint32_t);
     uint64_t op_bx(uint32_t);
+    uint64_t op_mrs(uint32_t);
+    uint64_t op_msr_reg(uint32_t);
+    uint64_t op_msr_imm(uint32_t);
+
+    uint64_t op_and_reg_immed(uint32_t);
+    uint64_t op_eor_reg_immed(uint32_t);
+    uint64_t op_sub_reg_immed(uint32_t);
+    uint64_t op_rsb_reg_immed(uint32_t);
+    uint64_t op_add_reg_immed(uint32_t);
+    uint64_t op_adc_reg_immed(uint32_t);
+    uint64_t op_sbc_reg_immed(uint32_t);
+    uint64_t op_rsc_reg_immed(uint32_t);
+    uint64_t op_orr_reg_immed(uint32_t);
+    uint64_t op_mov_reg_immed(uint32_t);
+    uint64_t op_bic_reg_immed(uint32_t);
+    uint64_t op_mvn_reg_immed(uint32_t);
+
+    uint64_t op_ands_reg_immed(uint32_t);
+    uint64_t op_eors_reg_immed(uint32_t);
+    uint64_t op_subs_reg_immed(uint32_t);
+    uint64_t op_rsbs_reg_immed(uint32_t);
+    uint64_t op_adds_reg_immed(uint32_t);
+    uint64_t op_adcs_reg_immed(uint32_t);
+    uint64_t op_sbcs_reg_immed(uint32_t);
+    uint64_t op_rscs_reg_immed(uint32_t);
+    uint64_t op_tst_reg_immed(uint32_t);
+    uint64_t op_teq_reg_immed(uint32_t);
+    uint64_t op_cmp_reg_immed(uint32_t);
+    uint64_t op_cmn_reg_immed(uint32_t);
+    uint64_t op_orrs_reg_immed(uint32_t);
+    uint64_t op_movs_reg_immed(uint32_t);
+    uint64_t op_bics_reg_immed(uint32_t);
+    uint64_t op_mvns_reg_immed(uint32_t);
+
+    uint64_t op_and_reg_reg(uint32_t);
+    uint64_t op_eor_reg_reg(uint32_t);
+    uint64_t op_sub_reg_reg(uint32_t);
+    uint64_t op_rsb_reg_reg(uint32_t);
+    uint64_t op_add_reg_reg(uint32_t);
+    uint64_t op_adc_reg_reg(uint32_t);
+    uint64_t op_sbc_reg_reg(uint32_t);
+    uint64_t op_rsc_reg_reg(uint32_t);
+    uint64_t op_orr_reg_reg(uint32_t);
+    uint64_t op_mov_reg_reg(uint32_t);
+    uint64_t op_bic_reg_reg(uint32_t);
+    uint64_t op_mvn_reg_reg(uint32_t);
+
+    uint64_t op_ands_reg_reg(uint32_t);
+    uint64_t op_eors_reg_reg(uint32_t);
+    uint64_t op_subs_reg_reg(uint32_t);
+    uint64_t op_rsbs_reg_reg(uint32_t);
+    uint64_t op_adds_reg_reg(uint32_t);
+    uint64_t op_adcs_reg_reg(uint32_t);
+    uint64_t op_sbcs_reg_reg(uint32_t);
+    uint64_t op_rscs_reg_reg(uint32_t);
+    uint64_t op_tst_reg_reg(uint32_t);
+    uint64_t op_teq_reg_reg(uint32_t);
+    uint64_t op_cmp_reg_reg(uint32_t);
+    uint64_t op_cmn_reg_reg(uint32_t);
+    uint64_t op_orrs_reg_reg(uint32_t);
+    uint64_t op_movs_reg_reg(uint32_t);
+    uint64_t op_bics_reg_reg(uint32_t);
+    uint64_t op_mvns_reg_reg(uint32_t);
+
+    uint64_t op_and_immed(uint32_t);
+    uint64_t op_eor_immed(uint32_t);
+    uint64_t op_sub_immed(uint32_t);
+    uint64_t op_rsb_immed(uint32_t);
+    uint64_t op_add_immed(uint32_t);
+    uint64_t op_adc_immed(uint32_t);
+    uint64_t op_sbc_immed(uint32_t);
+    uint64_t op_rsc_immed(uint32_t);
+    uint64_t op_orr_immed(uint32_t);
+    uint64_t op_mov_immed(uint32_t);
+    uint64_t op_bic_immed(uint32_t);
+    uint64_t op_mvn_immed(uint32_t);
+
+    uint64_t op_ands_immed(uint32_t);
+    uint64_t op_eors_immed(uint32_t);
+    uint64_t op_subs_immed(uint32_t);
+    uint64_t op_rsbs_immed(uint32_t);
+    uint64_t op_adds_immed(uint32_t);
+    uint64_t op_adcs_immed(uint32_t);
+    uint64_t op_sbcs_immed(uint32_t);
+    uint64_t op_rscs_immed(uint32_t);
+    uint64_t op_tst_immed(uint32_t);
+    uint64_t op_teq_immed(uint32_t);
+    uint64_t op_cmp_immed(uint32_t);
+    uint64_t op_cmn_immed(uint32_t);
+    uint64_t op_orrs_immed(uint32_t);
+    uint64_t op_movs_immed(uint32_t);
+    uint64_t op_bics_immed(uint32_t);
+    uint64_t op_mvns_immed(uint32_t);
+
+
 
     static const uint32_t inst_mask[];
     static const uint32_t inst_mask_match[];
