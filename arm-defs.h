@@ -69,3 +69,22 @@ struct status {
     unsigned n:1;
 };
 
+#define ALU_RN(x) r[((x>>16) & 0xf)].ureg
+#define ALU_RD(x) r[((x>>12) & 0xf)].ureg
+#define ALU_RM(x) r[(x & 0xf)].ureg
+#define ALU_RS(x) r[((x>>8) & 0xf)].ureg
+#define ALU_IMM(x) (x & 0xff)
+#define ALU_IMM_ROT(x) ((x>>7) & 0x1e)
+#define ALU_SHIFT_TYPE(x) ((x>>5) & 0x3)
+#define ALU_SHIFT_AMNT(x) ((x>>7) & 0x1f)
+
+#define BX_RN(x) r[(x & 0xf)].ureg
+
+#define MUL_RD(x) r[((x>>16) & 0xf)].ureg
+#define MUL_RN(x) r[((x>>12) & 0xf)].ureg
+#define MUL_RS(x) r[((x>>8) & 0xf)].ureg
+#define MUL_RM(x) r[(x & 0xf)].ureg
+#define MUL_RDHI(x) r[((x>>16) & 0xf)].ureg
+#define MUL_RDLO(x) r[((x>>12) & 0xf)].ureg
+
+
