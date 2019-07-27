@@ -138,9 +138,54 @@ uint64_t Arm7tdmi::op_noop(uint32_t opcode) {
     return 1;
 }
 
+template<unsigned long... I>
+constexpr inline auto Init_alu(std::index_sequence<I...>) {
+    return std::array<Arm7OpPtr,I>{ &Arm7tdmi::op_alu<I>... };
+}
+
+template<unsigned long... I>
+constexpr inline auto Init_mult(std::index_sequence<I...>) {
+    return std::array<Arm7OpPtr,I>{ &Arm7tdmi::op_mult<I>... };
+}
+
+template<unsigned long... I>
+constexpr inline auto Init_psr(std::index_sequence<I...>) {
+    return std::array<Arm7OpPtr,I>{ &Arm7tdmi::op_psr<I>... };
+}
+
+template<unsigned long... I>
+constexpr inline auto Init_branch(std::index_sequence<I...>) {
+    return std::array<Arm7OpPtr,I>{ &Arm7tdmi::op_branch<I>... };
+}
+
+template<unsigned long... I>
+constexpr inline auto Init_transfer(std::index_sequence<I...>) {
+    return std::array<Arm7OpPtr,I>{ &Arm7tdmi::op_transfer<I>... };
+}
+
+template<unsigned long... I>
+constexpr inline auto Init_transfer2(std::index_sequence<I...>) {
+    return std::array<Arm7OpPtr,I>{ &Arm7tdmi::op_transfer2<I>... };
+}
+
+template<unsigned long... I>
+constexpr inline auto Init_blktrans(std::index_sequence<I...>) {
+    return std::array<Arm7OpPtr,I>{ &Arm7tdmi::op_blktrans<I>... };
+}
+
+constexpr std::array<Arm7OpPtr,256> Arm7tdmi::alu_ops  =      Init_alu(std::make_index_sequence<256>());
+constexpr std::array<Arm7OpPtr,16>  Arm7tdmi::mult_ops =      Init_mult(std::make_index_sequence<16>());
+constexpr std::array<Arm7OpPtr,256> Arm7tdmi::psr_ops =       Init_psr(std::make_index_sequence<256>());
+constexpr std::array<Arm7OpPtr,256> Arm7tdmi::branch_ops =    Init_branch(std::make_index_sequence<256>());
+constexpr std::array<Arm7OpPtr,256> Arm7tdmi::transfer_ops =  Init_transfer(std::make_index_sequence<256>());
+constexpr std::array<Arm7OpPtr,256> Arm7tdmi::transfer2_ops = Init_transfer2(std::make_index_sequence<256>());
+constexpr std::array<Arm7OpPtr,256> Arm7tdmi::blktrans_ops =   Init_blktrans(std::make_index_sequence<256>());
+
+
+/*
 uint64_t Arm7tdmi::op_b(uint32_t opcode) {
     union format {
-        struct { 
+        struct {
             unsigned offset:24;
             unsigned identifier:4;
             unsigned condition:4;
@@ -163,7 +208,7 @@ uint64_t Arm7tdmi::op_b(uint32_t opcode) {
 
 uint64_t Arm7tdmi::op_bl(uint32_t opcode) {
     union format {
-        struct { 
+        struct {
             unsigned offset:24;
             unsigned identifier:4;
             unsigned condition:4;
@@ -188,7 +233,7 @@ uint64_t Arm7tdmi::op_bl(uint32_t opcode) {
 
 uint64_t Arm7tdmi::op_bx(uint32_t opcode) {
     union format {
-        struct { 
+        struct {
             unsigned reg:4;
             unsigned identifier:24;
             unsigned condition:4;
@@ -310,12 +355,12 @@ uint64_t Arm7tdmi::op_movs_immed(uint32_t opcode) {}
 uint64_t Arm7tdmi::op_bics_immed(uint32_t opcode) {}
 uint64_t Arm7tdmi::op_mvns_immed(uint32_t opcode) {}
 
+*/
 
 
 
 
-
-
+/*
 
 
 
@@ -369,7 +414,7 @@ const uint32_t Arm7tdmi::inst_mask[] = {
     0xff9, //MOV reg-reg
     0xff9, //BIC reg-reg
     0xff9, //MVN reg-reg
-                            
+
     0xff9, //ANDS reg-reg
     0xff9, //SUBS reg-reg
     0xff9, //RSBS reg-reg
@@ -397,7 +442,7 @@ const uint32_t Arm7tdmi::inst_mask[] = {
     0xff0, //MOV immed
     0xff0, //BIC immed
     0xff0, //MVN immed
-                            
+
     0xff0, //ANDS immed
     0xff0, //SUBS immed
     0xff0, //RSBS immed
@@ -436,7 +481,7 @@ const uint32_t Arm7tdmi::inst_mask_match[] = {
     0x1a0, //MOV reg-imm
     0x1c0, //BIC reg-imm
     0x1e0, //MVN reg-imm
-                        
+
     0x010, //ANDS reg-imm
     0x050, //SUBS reg-imm
     0x070, //RSBS reg-imm
@@ -452,7 +497,7 @@ const uint32_t Arm7tdmi::inst_mask_match[] = {
     0x1b0, //MOVS reg-imm
     0x1d0, //BICS reg-imm
     0x1f0, //MVNS reg-imm
-                        
+
     0x001, //AND reg-reg
     0x041, //SUB reg-reg
     0x061, //RSB reg-reg
@@ -464,7 +509,7 @@ const uint32_t Arm7tdmi::inst_mask_match[] = {
     0x1a1, //MOV reg-reg
     0x1c1, //BIC reg-reg
     0x1e1, //MVN reg-reg
-                        
+
     0x011, //ANDS reg-reg
     0x051, //SUBS reg-reg
     0x071, //RSBS reg-reg
@@ -480,7 +525,7 @@ const uint32_t Arm7tdmi::inst_mask_match[] = {
     0x1b1, //MOVS reg-reg
     0x1d1, //BICS reg-reg
     0x1f1, //MVNS reg-reg
-                        
+
     0x200, //AND immed
     0x240, //SUB immed
     0x260, //RSB immed
@@ -492,7 +537,7 @@ const uint32_t Arm7tdmi::inst_mask_match[] = {
     0x3a0, //MOV immed
     0x3c0, //BIC immed
     0x3e0, //MVN immed
-                        
+
     0x210, //ANDS immed
     0x250, //SUBS immed
     0x270, //RSBS immed
@@ -519,7 +564,7 @@ const Arm7OpPtr Arm7tdmi::inst_mask_ops[] = {
     &Arm7tdmi::op_mrs,
     &Arm7tdmi::op_msr_reg,
     &Arm7tdmi::op_msr_imm,
- 
+
     &Arm7tdmi::op_and_reg_immed,
     &Arm7tdmi::op_eor_reg_immed,
     &Arm7tdmi::op_sub_reg_immed,
@@ -614,3 +659,5 @@ const Arm7OpPtr Arm7tdmi::inst_mask_ops[] = {
 };
 
 const int Arm7tdmi::op_count = 91;
+
+*/
