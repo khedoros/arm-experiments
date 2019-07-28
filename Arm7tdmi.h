@@ -17,23 +17,8 @@ public:
     int run(uint64_t run_to);
     int runa(uint64_t run_to);
     int runt(uint64_t run_to);
-private:
-    uint64_t fetcha();
-    uint64_t fetcht();
-    uint64_t decodea();
-    uint64_t decodet();
-    uint64_t executea();
-    uint64_t executet();
-
     static Arm7OpPtr op_map[256 * 16];
-    constexpr static std::array<Arm7OpPtr,256> alu_ops;
-    constexpr static std::array<Arm7OpPtr,16>  mult_ops;
-    constexpr static std::array<Arm7OpPtr,256> psr_ops;
-    constexpr static std::array<Arm7OpPtr,256> branch_ops;
-    constexpr static std::array<Arm7OpPtr,256> transfer_ops;
-    constexpr static std::array<Arm7OpPtr,256> transfer2_ops;
-    constexpr static std::array<Arm7OpPtr,256> blktrans_ops;
-
+    
     void flush_pipeline();
 
     //non-template CPU operations
@@ -64,10 +49,18 @@ private:
     template<int I> //Block transfers, [20:24], 32 variants
     uint64_t op_blktrans(uint32_t op) { return 0; }
 
-    static const uint32_t inst_mask[];
-    static const uint32_t inst_mask_match[];
-    static const Arm7OpPtr inst_mask_ops[];
-    static const int op_count;
+private:
+    uint64_t fetcha();
+    uint64_t fetcht();
+    uint64_t decodea();
+    uint64_t decodet();
+    uint64_t executea();
+    uint64_t executet();
+
+    //static const uint32_t inst_mask[];
+    //static const uint32_t inst_mask_match[];
+    //static const Arm7OpPtr inst_mask_ops[];
+    //static const int op_count;
     enum state {
         ARM,
         THUMB
