@@ -28,26 +28,26 @@ public:
     uint64_t op_undef(uint32_t); //Undefined instructions
     uint64_t op_bx(uint32_t); //Branch and switch op
 
-    template<int I> //All 16 ALU operations, with their variants. [5:6]+[20:25], 256 variants
-    uint64_t op_alu(uint32_t op) { return 0; }
+    template<uint32_t I> //All 16 ALU operations, with their variants. [5:6]+[20:25], 256 variants
+    uint64_t op_alu(uint32_t op);
 
-    template<int I> //All multiplication variants, [20:23], 16 variants
-    uint64_t op_mult(uint32_t op) { return 0; }
+    template<uint32_t I> //All multiplication variants, [20:23], 16 variants
+    uint64_t op_mult(uint32_t op);
 
-    template<int I> //All status register transfers, [21:22]+[25], 8 variants
-    uint64_t op_psr(uint32_t op) { return 0; }
+    template<uint32_t I> //All status register transfers, [21:22]+[25], 8 variants
+    uint64_t op_psr(uint32_t op);
 
-    template<int I> //B and BL, [24], 2 variants
-    uint64_t op_branch(uint32_t op) { return 0; }
+    template<uint32_t I> //B and BL, [24], 2 variants
+    uint64_t op_branch(uint32_t op);
 
-    template<int I> //First set of transfer functions in ALU opcode space. [5:6]+[20:24], 128 variants
-    uint64_t op_transfer(uint32_t op) { return 0; }
+    template<uint32_t I> //First set of transfer functions in ALU opcode space. [5:6]+[20:24], 128 variants
+    uint64_t op_transfer(uint32_t op);
 
-    template<int I> //Second set of transfer functions, 010 and 011 prefix, [5:6]+[20:25], 256 variants
-    uint64_t op_transfer2(uint32_t op) { return 0; }
+    template<uint32_t I> //Second set of transfer functions, 010 and 011 prefix, [5:6]+[20:25], 256 variants
+    uint64_t op_transfer2(uint32_t op);
 
-    template<int I> //Block transfers, [20:24], 32 variants
-    uint64_t op_blktrans(uint32_t op) { return 0; }
+    template<uint32_t I> //Block transfers, [20:24], 32 variants
+    uint64_t op_blktrans(uint32_t op);
 
 private:
     uint64_t fetcha();

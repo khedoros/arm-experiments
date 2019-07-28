@@ -141,11 +141,7 @@ void Arm7tdmi::flush_pipeline() {
     execute_ready = false;
 }
 
-uint64_t Arm7tdmi::op_noop(uint32_t opcode) {
-    cout<<hex<<r[15].ureg-8<<":\t"<<opcode<<" (nop, or unrecognized)"<<endl;
-    return 1;
-}
-
+//Crap related to generating large numbers of template functions for my operations
 template<unsigned long... I>
 constexpr inline auto Init_alu(std::index_sequence<I...>) {
     return std::array{ &Arm7tdmi::op_alu<I>... };
@@ -181,6 +177,7 @@ constexpr inline auto Init_blktrans(std::index_sequence<I...>) {
     return std::array{ &Arm7tdmi::op_blktrans<I>... };
 }
 
+//Actually generates arrays of function pointers
 constexpr std::array alu_op_gen  =      Init_alu(std::make_index_sequence<256>());
 constexpr std::array mult_op_gen =      Init_mult(std::make_index_sequence<16>());
 constexpr std::array psr_op_gen =       Init_psr(std::make_index_sequence<8>());
@@ -189,58 +186,28 @@ constexpr std::array transfer_op_gen =  Init_transfer(std::make_index_sequence<1
 constexpr std::array transfer2_op_gen = Init_transfer2(std::make_index_sequence<256>());
 constexpr std::array blktrans_op_gen =  Init_blktrans(std::make_index_sequence<32>());
 
+//4096-entry map of a 8+4-bit field extracted from opcodes to the operation that the field represents. This is actually defined in the object's constructor.
 Arm7OpPtr Arm7tdmi::op_map[256 * 16] = {nullptr};
 
-/*
-uint64_t Arm7tdmi::op_b(uint32_t opcode) {
-    union format {
-        struct {
-            unsigned offset:24;
-            unsigned identifier:4;
-            unsigned condition:4;
-        };
-        uint32_t val;
-    } f;
-    f.val = opcode;
-    flush_pipeline();
-    int32_t offset = (f.offset<<2) - 4;
-    cout<<hex<<r[15].ureg-8<<":\t"<<opcode<<" (ARM)  b "<<offset+12<<endl;
-    offset |= ((offset & (1<<25)) * 0x7f); //Check 26th bit, fill in the 6 bits above it if it's set
-    if(s == THUMB) {
-        r[15].ureg += offset;
-    }
-    else {
-        r[15].ureg += offset;
-    }
-    return 3; //2S + 1N cycles
+uint64_t Arm7tdmi::op_noop(uint32_t opcode) {
+    cout<<hex<<r[15].ureg-8<<":\t"<<opcode<<" (nop, or unrecognized)"<<endl;
+    return 0;
 }
 
-uint64_t Arm7tdmi::op_bl(uint32_t opcode) {
-    union format {
-        struct {
-            unsigned offset:24;
-            unsigned identifier:4;
-            unsigned condition:4;
-        };
-        uint32_t val;
-    } f;
-    f.val = opcode;
-    flush_pipeline();
-    int32_t offset = (f.offset<<2) - 4;
-    cout<<hex<<r[15].ureg-8<<":\t"<<opcode<<" (ARM)  bl "<<offset+12<<endl;
-    offset |= ((offset & (1<<25)) * 0x7f); //Check 26th bit, fill in the 6 bits above it if it's set
-    if(s == THUMB) {
-        r[14].ureg = r[15].ureg - 2;
-        r[15].ureg += offset;
-    }
-    else {
-        r[14].ureg = r[15].ureg - 4;
-        r[15].ureg += offset;
-    }
-    return 3; //2S + 1N cycles
+uint64_t Arm7tdmi::op_coproc(uint32_t opcode) {
+    return 4;
+}
+
+uint64_t Arm7tdmi::op_swi(uint32_t opcode) {
+    return 4;
+}
+
+uint64_t Arm7tdmi::op_undef(uint32_t opcode) {
+    return 4;
 }
 
 uint64_t Arm7tdmi::op_bx(uint32_t opcode) {
+    cout<<"<op_bx> Opcode: "<<opcode<<"\n";
     union format {
         struct {
             unsigned reg:4;
@@ -262,17 +229,75 @@ uint64_t Arm7tdmi::op_bx(uint32_t opcode) {
     return 3; //2S + 1N cycles
 }
 
-uint64_t Arm7tdmi::op_mrs(uint32_t opcode) { //copies status to register
-    return 1; //1S cycles
+template<uint32_t I>
+uint64_t Arm7tdmi::op_alu(uint32_t opcode) {
+    cout<<"<op_alu> Opcode: "<<opcode<<" Funct variant: "<<I<<"\n";
+    return 4;
 }
 
-uint64_t Arm7tdmi::op_msr_reg(uint32_t opcode) { //applies register to status, or to status flags only
-    return 1; //1S cycles
+template<uint32_t I>
+uint64_t Arm7tdmi::op_mult(uint32_t opcode) {
+    cout<<"<op_mult> Opcode: "<<opcode<<" Funct variant: "<<I<<"\n";
+    return 4;
 }
 
-uint64_t Arm7tdmi::op_msr_imm(uint32_t opcode) { //applies immediate to status flags only
-    return 1; //1S cycles
+template<uint32_t I>
+uint64_t Arm7tdmi::op_psr(uint32_t opcode) {
+    cout<<"<op_psr> Opcode: "<<opcode<<" Funct variant: "<<I<<"\n";
+    return 4;
 }
 
-*/
+template<uint32_t I>
+uint64_t Arm7tdmi::op_branch(uint32_t opcode) {
+    //cout<<"<op_branch> Opcode: "<<opcode<<" Funct variant: "<<I<<"\n";
+    union format {
+        struct {
+            unsigned offset:24;
+            unsigned identifier:4;
+            unsigned condition:4;
+        };
+        uint32_t val;
+    } f;
+    f.val = opcode;
+    flush_pipeline();
+    int32_t offset = (f.offset<<2) - 4;
+
+    std::string opname;
+    if(I == 0) opname = "b";
+    else if(I==1) opname = "bl";
+    cout<<hex<<r[15].ureg-8<<":\t"<<opcode<<" (ARM)  "<<opname<<"  "<<offset+12<<endl;
+
+    offset |= ((offset & (1<<25)) * 0x7f); //Check 26th bit, fill in the 6 bits above it if it's set
+    if(s == THUMB) {
+        if(I == 1) { //BL
+            r[14].ureg = r[15].ureg - 2;
+        }
+        r[15].ureg += offset;
+    }
+    else {
+        if(I == 1) { //BL
+            r[14].ureg = r[15].ureg - 4;
+        }
+        r[15].ureg += offset;
+    }
+    return 3; //2S + 1N cycles
+}
+
+template<uint32_t I>
+uint64_t Arm7tdmi::op_transfer(uint32_t opcode) {
+    cout<<"<op_transfer> Opcode: "<<opcode<<" Funct variant: "<<I<<"\n";
+    return 4;
+}
+
+template<uint32_t I>
+uint64_t Arm7tdmi::op_transfer2(uint32_t opcode) {
+    cout<<"<op_transfer> Opcode: "<<opcode<<" Funct variant: "<<I<<"\n";
+    return 4;
+}
+
+template<uint32_t I>
+uint64_t Arm7tdmi::op_blktrans(uint32_t opcode) {
+    cout<<"<op_blktrans> Opcode: "<<opcode<<" Funct variant: "<<I<<"\n";
+    return 4;
+}
 
