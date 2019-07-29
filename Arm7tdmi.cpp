@@ -5,22 +5,93 @@
 
 using namespace std;
 
+//Crap related to generating large numbers of template functions for my operations
+template<unsigned long... I>
+constexpr inline auto Init_alu(std::index_sequence<I...>) {
+    return std::array{ &Arm7tdmi::op_alu<I>... };
+}
+
+template<unsigned long... I>
+constexpr inline auto Init_mult(std::index_sequence<I...>) {
+    return std::array{ &Arm7tdmi::op_mult<I>... };
+}
+
+template<unsigned long... I>
+constexpr inline auto Init_psr(std::index_sequence<I...>) {
+    return std::array{ &Arm7tdmi::op_psr<I>... };
+}
+
+template<unsigned long... I>
+constexpr inline auto Init_branch(std::index_sequence<I...>) {
+    return std::array{ &Arm7tdmi::op_branch<I>... };
+}
+
+template<unsigned long... I>
+constexpr inline auto Init_transfer(std::index_sequence<I...>) {
+    return std::array{ &Arm7tdmi::op_transfer<I>... };
+}
+
+template<unsigned long... I>
+constexpr inline auto Init_transfer2(std::index_sequence<I...>) {
+    return std::array{ &Arm7tdmi::op_transfer2<I>... };
+}
+
+template<unsigned long... I>
+constexpr inline auto Init_blktrans(std::index_sequence<I...>) {
+    return std::array{ &Arm7tdmi::op_blktrans<I>... };
+}
+
+//Actually generates arrays of function pointers
+constexpr std::array alu_op_gen  =      Init_alu(std::make_index_sequence<256>());
+constexpr std::array mult_op_gen =      Init_mult(std::make_index_sequence<16>());
+constexpr std::array psr_op_gen =       Init_psr(std::make_index_sequence<8>());
+constexpr std::array branch_op_gen =    Init_branch(std::make_index_sequence<2>());
+constexpr std::array transfer_op_gen =  Init_transfer(std::make_index_sequence<128>());
+constexpr std::array transfer2_op_gen = Init_transfer2(std::make_index_sequence<256>());
+constexpr std::array blktrans_op_gen =  Init_blktrans(std::make_index_sequence<32>());
+
+//alu fields
+bool is_immed(uint32_t i) {
+    return (((1<<9)&i)>0);
+}
+uint32_t opcode_num(uint32_t i) {
+    return ((i>>5)&0x0f);
+}
+bool is_set(uint32_t i) {
+    return (((1<<4)&i)>0);
+}
+bool is_compare(uint32_t i) {
+    return (opcode_num(i)>=8 && opcode_num(i)<12 && is_set(i));
+}
+uint32_t shift_tag_field(uint32_t i) {
+    return (i&0x009);
+}
+
+//branch fields
+bool is_link(uint32_t i) {
+     return (((1<<8)&i)>0);
+}
+
 Arm7tdmi::Arm7tdmi(shared_ptr<Gba_memmap>& b) : bus(b), m(Arm7tdmi::SYS), s(Arm7tdmi::ARM), cycle(0), fetched(false), decode_ready(false), decoded(false), execute_ready(false) {
-    cout<<"Construct ARM at "<<hex<<this<<"\n";
     r[15].ureg = 0;
     for(auto & op: op_map) {
         op = &Arm7tdmi::op_noop;
     }
-    /*
-    for(int inst_ptr = 0; inst_ptr < 4096; inst_ptr++) {
-        for(int candidate = 0; candidate < op_count; candidate++) {
-            if((inst_ptr & inst_mask[candidate]) == inst_mask_match[candidate]) {
-                op_map[inst_ptr] = inst_mask_ops[candidate];
-                break;
-            }
+    //ARM instruction    1111 11111111 111111111111 1111 1111
+    //op_map indices     0000 ba987654 XXXXXXXXXXXX 3210 XXXX = ba9876543210
+    //alu_op_gen indices XXXX XX765432 XXXXXXXXXXXX X10X XXXX = 76543210
+    //branch_op_gen inds XXXX XXX0XXXX XXXXXXXXXXXX XXXX XXXX = 0
+    for(uint32_t i = 0x000; i < 0x3ff; i++) { //AND,EOR,SUB,RSB,ADD,ADC,SBC,RSC,TST,TEQ,CMP,CMN,ORR,MOV,BIC,MVN
+        if(( (!is_immed(i)) && shift_tag_field(i)==9) || (is_compare(i) && (!is_set(i)))) {
+            continue;
+        }
+        else {
+            op_map[i] = alu_op_gen.at(((i>>1)&0xff));
         }
     }
-    */
+    for(uint32_t i = 0xa00; i < 0xc00; i++) { //B,BL
+        op_map[i] = branch_op_gen.at(is_link(i)?1:0);
+    }
 }
 
 int Arm7tdmi::run(uint64_t run_to) {
@@ -140,51 +211,6 @@ void Arm7tdmi::flush_pipeline() {
     decoded = false;
     execute_ready = false;
 }
-
-//Crap related to generating large numbers of template functions for my operations
-template<unsigned long... I>
-constexpr inline auto Init_alu(std::index_sequence<I...>) {
-    return std::array{ &Arm7tdmi::op_alu<I>... };
-}
-
-template<unsigned long... I>
-constexpr inline auto Init_mult(std::index_sequence<I...>) {
-    return std::array{ &Arm7tdmi::op_mult<I>... };
-}
-
-template<unsigned long... I>
-constexpr inline auto Init_psr(std::index_sequence<I...>) {
-    return std::array{ &Arm7tdmi::op_psr<I>... };
-}
-
-template<unsigned long... I>
-constexpr inline auto Init_branch(std::index_sequence<I...>) {
-    return std::array{ &Arm7tdmi::op_branch<I>... };
-}
-
-template<unsigned long... I>
-constexpr inline auto Init_transfer(std::index_sequence<I...>) {
-    return std::array{ &Arm7tdmi::op_transfer<I>... };
-}
-
-template<unsigned long... I>
-constexpr inline auto Init_transfer2(std::index_sequence<I...>) {
-    return std::array{ &Arm7tdmi::op_transfer2<I>... };
-}
-
-template<unsigned long... I>
-constexpr inline auto Init_blktrans(std::index_sequence<I...>) {
-    return std::array{ &Arm7tdmi::op_blktrans<I>... };
-}
-
-//Actually generates arrays of function pointers
-constexpr std::array alu_op_gen  =      Init_alu(std::make_index_sequence<256>());
-constexpr std::array mult_op_gen =      Init_mult(std::make_index_sequence<16>());
-constexpr std::array psr_op_gen =       Init_psr(std::make_index_sequence<8>());
-constexpr std::array branch_op_gen =    Init_branch(std::make_index_sequence<2>());
-constexpr std::array transfer_op_gen =  Init_transfer(std::make_index_sequence<128>());
-constexpr std::array transfer2_op_gen = Init_transfer2(std::make_index_sequence<256>());
-constexpr std::array blktrans_op_gen =  Init_blktrans(std::make_index_sequence<32>());
 
 //4096-entry map of a 8+4-bit field extracted from opcodes to the operation that the field represents. This is actually defined in the object's constructor.
 Arm7OpPtr Arm7tdmi::op_map[256 * 16] = {nullptr};

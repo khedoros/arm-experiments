@@ -14,7 +14,7 @@ Gba::Gba(string bios_file, string rom_file) : valid(false) {
     uint64_t cycle_chunk = 16384;
     while(1==1) {
         //cout<<"Run cycle "<<cycle<<"->"<<cycle+cycle_chunk<<"\n";
-        cpu->run(cycle + cycle_chunk);
+        int ret = cpu->run(cycle + cycle_chunk);
         //TODO: Run GPU
         //TODO: Run APU
         cycle += cycle_chunk;
