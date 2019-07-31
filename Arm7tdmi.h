@@ -112,8 +112,8 @@ private:
     mreg cspr;
     mreg spsr[5]; //spsr_fiq, spsr_svc, spsr_abt, spsr_irq, spsr_und
 
-    mode m;
-    state s;
+    mode priv_mode;
+    state isa_state;
 
     uint64_t cycle;
     bool fetched; //An instruction was previously fetched, and is ready to be decoded

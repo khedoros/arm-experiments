@@ -57,11 +57,11 @@ bool is_immed(uint32_t i) {
 uint32_t opcode_num(uint32_t i) {
     return ((i>>5)&0x0f);
 }
-bool is_set(uint32_t i) {
+bool is_stat_set(uint32_t i) {
     return (((1<<4)&i)>0);
 }
-bool is_compare(uint32_t i) {
-    return (opcode_num(i)>=8 && opcode_num(i)<12 && is_set(i));
+bool is_compare_inst(uint32_t i) {
+    return (opcode_num(i)>=8 && opcode_num(i)<12 && is_stat_set(i));
 }
 uint32_t shift_tag_field(uint32_t i) {
     return (i&0x009);
@@ -72,7 +72,7 @@ bool is_link(uint32_t i) {
      return (((1<<8)&i)>0);
 }
 
-Arm7tdmi::Arm7tdmi(shared_ptr<Gba_memmap>& b) : bus(b), m(Arm7tdmi::SYS), s(Arm7tdmi::ARM), cycle(0), fetched(false), decode_ready(false), decoded(false), execute_ready(false) {
+Arm7tdmi::Arm7tdmi(shared_ptr<Gba_memmap>& b) : bus(b), priv_mode(Arm7tdmi::SYS), isa_state(Arm7tdmi::ARM), cycle(0), fetched(false), decode_ready(false), decoded(false), execute_ready(false) {
     r[15].ureg = 0;
     for(auto & op: op_map) {
         op = &Arm7tdmi::op_noop;
@@ -82,7 +82,7 @@ Arm7tdmi::Arm7tdmi(shared_ptr<Gba_memmap>& b) : bus(b), m(Arm7tdmi::SYS), s(Arm7
     //alu_op_gen indices XXXX XX765432 XXXXXXXXXXXX X10X XXXX = 76543210
     //branch_op_gen inds XXXX XXX0XXXX XXXXXXXXXXXX XXXX XXXX = 0
     for(uint32_t i = 0x000; i < 0x3ff; i++) { //AND,EOR,SUB,RSB,ADD,ADC,SBC,RSC,TST,TEQ,CMP,CMN,ORR,MOV,BIC,MVN
-        if(( (!is_immed(i)) && shift_tag_field(i)==9) || (is_compare(i) && (!is_set(i)))) {
+        if(( (!is_immed(i)) && shift_tag_field(i)==9) || (is_compare_inst(i) && (!is_stat_set(i)))) {
             continue;
         }
         else {
@@ -97,7 +97,7 @@ Arm7tdmi::Arm7tdmi(shared_ptr<Gba_memmap>& b) : bus(b), m(Arm7tdmi::SYS), s(Arm7
 int Arm7tdmi::run(uint64_t run_to) {
     int status = 0;
     while(cycle < run_to && !status) {
-        if(s == ARM) {
+        if(isa_state == ARM) {
             status = runa(run_to);
         }
         else {
@@ -108,7 +108,7 @@ int Arm7tdmi::run(uint64_t run_to) {
 }
 
 int Arm7tdmi::runa(uint64_t run_to) {
-    while(cycle < run_to && s == ARM) {
+    while(cycle < run_to && isa_state == ARM) {
         if(decoded) {
             to_execute = decoded_instr;
             to_execute_type = decoded_instr_type;
@@ -128,7 +128,7 @@ int Arm7tdmi::runa(uint64_t run_to) {
 }
 
 int Arm7tdmi::runt(uint64_t run_to) {
-    while(cycle < run_to && s == THUMB) {
+    while(cycle < run_to && isa_state == THUMB) {
         if(decoded) {
             to_execute = decoded_instr;
             to_execute_type = decoded_instr_type;
@@ -246,11 +246,11 @@ uint64_t Arm7tdmi::op_bx(uint32_t opcode) {
     flush_pipeline();
     if(r[f.reg].ureg & 1) {
         r[15].ureg = (r[f.reg].ureg & 0xfffffffe);
-        s = THUMB;
+        isa_state = THUMB;
     }
     else {
         r[15].ureg = (r[f.reg].ureg & 0xfffffffc);
-        s = ARM;
+        isa_state = ARM;
     }
     return 3; //2S + 1N cycles
 }
@@ -293,7 +293,7 @@ uint64_t Arm7tdmi::op_branch(uint32_t opcode) {
     cout<<hex<<r[15].ureg-8<<":\t<op_branch> "<<opcode<<" (ARM)  "<<opname<<"  "<<offset+12<<endl;
 
     offset |= ((offset & (1<<25)) * 0x7f); //Check 26th bit, fill in the 6 bits above it if it's set
-    if(s == THUMB) {
+    if(isa_state == THUMB) {
         if(I == 1) { //BL
             r[14].ureg = r[15].ureg - 2;
         }
