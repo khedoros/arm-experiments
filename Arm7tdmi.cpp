@@ -149,7 +149,7 @@ int Arm7tdmi::runt(uint64_t run_to) {
 
 uint64_t Arm7tdmi::fetcha() {
     read_response inst = bus->read32(r[15].ureg, cycle);
-    cout<<hex<<r[15].ureg<<":\t"<<inst.data.word<<" (fetch ARM)"<<endl;
+    //cout<<hex<<r[15].ureg<<":\t"<<inst.data.word<<" (fetch ARM)"<<endl;
     fetched = true;
     fetched_instr = inst.data.word;
     return inst.time;
@@ -173,7 +173,7 @@ uint64_t Arm7tdmi::executea() {
     //TODO: Make sure condition is correct to execute the instruction
     if(/*condition stuff*/true) {
         uint32_t short_form = ((to_execute & 0x0ff00000)>>16) | ((to_execute & 0x000000f0)>>4);
-        cout<<hex<<"Run "<<short_form<<endl;
+        //cout<<hex<<"Run "<<short_form<<endl;
         return CALL_MEMBER_FN(this, op_map[short_form])(to_execute);
     }
     return 0;
@@ -233,7 +233,7 @@ uint64_t Arm7tdmi::op_undef(uint32_t opcode) {
 }
 
 uint64_t Arm7tdmi::op_bx(uint32_t opcode) {
-    cout<<"<op_bx> Opcode: "<<opcode<<"\n";
+    cout<<hex<<r[15].ureg-8<<"\t<op_bx> Opcode: "<<opcode<<"\n";
     union format {
         struct {
             unsigned reg:4;
@@ -257,25 +257,24 @@ uint64_t Arm7tdmi::op_bx(uint32_t opcode) {
 
 template<uint32_t I>
 uint64_t Arm7tdmi::op_alu(uint32_t opcode) {
-    cout<<"<op_alu> Opcode: "<<opcode<<" Funct variant: "<<I<<"\n";
+    cout<<hex<<r[15].ureg-8<<"\t<op_alu> Opcode: "<<opcode<<" Funct variant: "<<I<<"\n";
     return 4;
 }
 
 template<uint32_t I>
 uint64_t Arm7tdmi::op_mult(uint32_t opcode) {
-    cout<<"<op_mult> Opcode: "<<opcode<<" Funct variant: "<<I<<"\n";
+    cout<<hex<<r[15].ureg-8<<"\t<op_mult> Opcode: "<<opcode<<" Funct variant: "<<I<<"\n";
     return 4;
 }
 
 template<uint32_t I>
 uint64_t Arm7tdmi::op_psr(uint32_t opcode) {
-    cout<<"<op_psr> Opcode: "<<opcode<<" Funct variant: "<<I<<"\n";
+    cout<<hex<<r[15].ureg-8<<"\t<op_psr> Opcode: "<<opcode<<" Funct variant: "<<I<<"\n";
     return 4;
 }
 
 template<uint32_t I>
 uint64_t Arm7tdmi::op_branch(uint32_t opcode) {
-    //cout<<"<op_branch> Opcode: "<<opcode<<" Funct variant: "<<I<<"\n";
     union format {
         struct {
             unsigned offset:24;
@@ -291,7 +290,7 @@ uint64_t Arm7tdmi::op_branch(uint32_t opcode) {
     std::string opname;
     if(I == 0) opname = "b";
     else if(I==1) opname = "bl";
-    cout<<hex<<r[15].ureg-8<<":\t"<<opcode<<" (ARM)  "<<opname<<"  "<<offset+12<<endl;
+    cout<<hex<<r[15].ureg-8<<":\t<op_branch> "<<opcode<<" (ARM)  "<<opname<<"  "<<offset+12<<endl;
 
     offset |= ((offset & (1<<25)) * 0x7f); //Check 26th bit, fill in the 6 bits above it if it's set
     if(s == THUMB) {
@@ -311,19 +310,19 @@ uint64_t Arm7tdmi::op_branch(uint32_t opcode) {
 
 template<uint32_t I>
 uint64_t Arm7tdmi::op_transfer(uint32_t opcode) {
-    cout<<"<op_transfer> Opcode: "<<opcode<<" Funct variant: "<<I<<"\n";
+    cout<<hex<<r[15].ureg-8<<"\t<op_transfer> Opcode: "<<opcode<<" Funct variant: "<<I<<"\n";
     return 4;
 }
 
 template<uint32_t I>
 uint64_t Arm7tdmi::op_transfer2(uint32_t opcode) {
-    cout<<"<op_transfer> Opcode: "<<opcode<<" Funct variant: "<<I<<"\n";
+    cout<<hex<<r[15].ureg-8<<"\t<op_transfer> Opcode: "<<opcode<<" Funct variant: "<<I<<"\n";
     return 4;
 }
 
 template<uint32_t I>
 uint64_t Arm7tdmi::op_blktrans(uint32_t opcode) {
-    cout<<"<op_blktrans> Opcode: "<<opcode<<" Funct variant: "<<I<<"\n";
+    cout<<hex<<r[15].ureg-8<<"\t<op_blktrans> Opcode: "<<opcode<<" Funct variant: "<<I<<"\n";
     return 4;
 }
 
