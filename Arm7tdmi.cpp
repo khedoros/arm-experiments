@@ -216,7 +216,7 @@ void Arm7tdmi::flush_pipeline() {
 Arm7OpPtr Arm7tdmi::op_map[256 * 16] = {nullptr};
 
 uint64_t Arm7tdmi::op_noop(uint32_t opcode) {
-    cout<<hex<<r[15].ureg-8<<":\t"<<opcode<<" (nop, or unrecognized)"<<endl;
+    cout<<hex<<r[15].ureg-8<<"\t "<<opcode<<" (nop, or unrecognized)"<<endl;
     return 0;
 }
 
@@ -233,7 +233,7 @@ uint64_t Arm7tdmi::op_undef(uint32_t opcode) {
 }
 
 uint64_t Arm7tdmi::op_bx(uint32_t opcode) {
-    cout<<hex<<r[15].ureg-8<<"\t<op_bx> Opcode: "<<opcode<<"\n";
+    cout<<hex<<r[15].ureg-8<<"\t <op_bx> Opcode: "<<opcode<<"\n";
     union format {
         struct {
             unsigned reg:4;
@@ -257,19 +257,19 @@ uint64_t Arm7tdmi::op_bx(uint32_t opcode) {
 
 template<uint32_t I>
 uint64_t Arm7tdmi::op_alu(uint32_t opcode) {
-    cout<<hex<<r[15].ureg-8<<"\t<op_alu> Opcode: "<<opcode<<" Funct variant: "<<I<<"\n";
+    cout<<hex<<r[15].ureg-8<<"\t <op_alu> Opcode: "<<opcode<<" Funct variant: "<<I<<"\n";
     return 4;
 }
 
 template<uint32_t I>
 uint64_t Arm7tdmi::op_mult(uint32_t opcode) {
-    cout<<hex<<r[15].ureg-8<<"\t<op_mult> Opcode: "<<opcode<<" Funct variant: "<<I<<"\n";
+    cout<<hex<<r[15].ureg-8<<"\t <op_mult> Opcode: "<<opcode<<" Funct variant: "<<I<<"\n";
     return 4;
 }
 
 template<uint32_t I>
 uint64_t Arm7tdmi::op_psr(uint32_t opcode) {
-    cout<<hex<<r[15].ureg-8<<"\t<op_psr> Opcode: "<<opcode<<" Funct variant: "<<I<<"\n";
+    cout<<hex<<r[15].ureg-8<<"\t <op_psr> Opcode: "<<opcode<<" Funct variant: "<<I<<"\n";
     return 4;
 }
 
@@ -287,12 +287,13 @@ uint64_t Arm7tdmi::op_branch(uint32_t opcode) {
     flush_pipeline();
     int32_t offset = (f.offset<<2) - 4;
 
+    offset |= ((offset & (1<<25)) * 0x7f); //Check 26th bit, fill in the 6 bits above it if it's set
+
     std::string opname;
     if(I == 0) opname = "b";
     else if(I==1) opname = "bl";
-    cout<<hex<<r[15].ureg-8<<":\t<op_branch> "<<opcode<<" (ARM)  "<<opname<<"  "<<offset+12<<endl;
+    cout<<hex<<r[15].ureg-8<<"\t <op_branch> "<<opcode<<" (ARM)  "<<opname<<"  "<<r[15].ureg + offset + 4<<endl;
 
-    offset |= ((offset & (1<<25)) * 0x7f); //Check 26th bit, fill in the 6 bits above it if it's set
     if(isa_state == THUMB) {
         if(I == 1) { //BL
             r[14].ureg = r[15].ureg - 2;
