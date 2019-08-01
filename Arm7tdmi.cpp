@@ -258,6 +258,90 @@ uint64_t Arm7tdmi::op_bx(uint32_t opcode) {
 template<uint32_t I>
 uint64_t Arm7tdmi::op_alu(uint32_t opcode) {
     cout<<hex<<r[15].ureg-8<<"\t <op_alu> Opcode: "<<opcode<<" Funct variant: "<<I<<"\n";
+    union full_format {
+        struct {
+            unsigned operand2:12;
+            unsigned rd:4;
+            unsigned rn:4;
+            unsigned set_status:1;
+            unsigned operation:4;
+            unsigned immediate:1;
+            unsigned top_tag:2;
+            unsigned condition:4;
+        };
+        uint32_t val;
+    } f;
+
+    union short_format {
+        struct {
+            unsigned reg_shift:1;
+            unsigned shift_type:2;
+            unsigned high_shift:1;
+            unsigned set_status:1;
+            unsigned operation:4;
+            unsigned immediate:1;
+            unsigned top_tag:2;
+        };
+        uint32_t val;
+    } sf;
+
+    f.val = opcode;
+    sf.val = I;
+
+    uint32_t operand2 = 0;
+    uint32_t op2_carry = 0;
+
+    if(sf.immediate) { //Immediate mode
+
+    }
+    else if(sf.reg_shift) { //register-shifted register mode
+
+    }
+    else { //immediate-shifted register mode
+
+    }
+
+    switch(sf.operation) {
+        case 0x00:
+            break;
+        case 0x01:
+            break;
+        case 0x01:
+            break;
+        case 0x02:
+            break;
+        case 0x03:
+            break;
+        case 0x04:
+            break;
+        case 0x05:
+            break;
+        case 0x06:
+            break;
+        case 0x07:
+            break;
+        case 0x08:
+            break;
+        case 0x09:
+            break;
+        case 0x0A:
+            break;
+        case 0x0B:
+            break;
+        case 0x0C:
+            break;
+        case 0x0D:
+            break;
+        case 0x0E:
+            break;
+        case 0x0F:
+            break;
+    }
+
+    if(sf.set_status) {
+
+    }
+
     return 4;
 }
 
