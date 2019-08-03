@@ -103,17 +103,46 @@ private:
             unsigned sign:1;
         };
     };
-    reg r[16]; //regular user regs
-    reg r_fiq[7]; //r8_fiq..r14_fiq
-    reg r_svc[2]; //r13_svc+r14_svc
-    reg r_abt[2]; //r13_abt+r14_abt
-    reg r_irq[2]; //r13_abt+r14_abt
-    reg r_und[2]; //r13_abt+r14_abt
-    mreg cspr;
-    mreg spsr[5]; //spsr_fiq, spsr_svc, spsr_abt, spsr_irq, spsr_und
 
-    mode priv_mode;
-    state isa_state;
+    class regbank {
+        reg r[16]; //regular user regs
+        reg r_fiq[7]; //r8_fiq..r14_fiq
+        reg r_svc[2]; //r13_svc+r14_svc
+        reg r_abt[2]; //r13_abt+r14_abt
+        reg r_irq[2]; //r13_abt+r14_abt
+        reg r_und[2]; //r13_abt+r14_abt
+        mreg cpsr;
+        mreg spsr[5]; //spsr_fiq, spsr_svc, spsr_abt, spsr_irq, spsr_und
+
+        mreg * cur_psr;
+        reg * cur_reg[7];
+
+        mode priv_mode;
+        state isa_state;
+
+        public:
+        regbank();
+        void set_priv_mode(mode m);
+        void set_isa_state(state s);
+        void set_fiq_disable(bool f);
+        void set_irq_disable(bool i);
+        void set_overflow(bool o);
+        void set_carry(bool c);
+        void set_zero(bool z);
+        void set_sign(bool s);
+        bool get_fiq_disable();
+        bool get_irq_disable();
+        bool get_overflow();
+        bool get_carry();
+        bool get_zero();
+        bool get_sign();
+        mode get_priv_mode();
+        state get_isa_state();
+
+        Arm7tdmi::reg& operator[](uint32_t index);
+    };
+
+    regbank r;
 
     uint64_t cycle;
     bool fetched; //An instruction was previously fetched, and is ready to be decoded

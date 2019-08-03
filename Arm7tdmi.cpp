@@ -1,5 +1,6 @@
 #include<algorithm>
 #include<iostream>
+#include<cassert>
 #include "Arm7tdmi.h"
 #include "gba_types.h"
 
@@ -72,7 +73,7 @@ bool is_link(uint32_t i) {
      return (((1<<8)&i)>0);
 }
 
-Arm7tdmi::Arm7tdmi(shared_ptr<Gba_memmap>& b) : bus(b), priv_mode(Arm7tdmi::SYS), isa_state(Arm7tdmi::ARM), cycle(0), fetched(false), decode_ready(false), decoded(false), execute_ready(false) {
+Arm7tdmi::Arm7tdmi(shared_ptr<Gba_memmap>& b) : bus(b), r(), cycle(0), fetched(false), decode_ready(false), decoded(false), execute_ready(false) {
     r[15].ureg = 0;
     for(auto & op: op_map) {
         op = &Arm7tdmi::op_noop;
@@ -97,7 +98,7 @@ Arm7tdmi::Arm7tdmi(shared_ptr<Gba_memmap>& b) : bus(b), priv_mode(Arm7tdmi::SYS)
 int Arm7tdmi::run(uint64_t run_to) {
     int status = 0;
     while(cycle < run_to && !status) {
-        if(isa_state == ARM) {
+        if(r.get_isa_state() == ARM) {
             status = runa(run_to);
         }
         else {
@@ -108,7 +109,7 @@ int Arm7tdmi::run(uint64_t run_to) {
 }
 
 int Arm7tdmi::runa(uint64_t run_to) {
-    while(cycle < run_to && isa_state == ARM) {
+    while(cycle < run_to && r.get_isa_state() == ARM) {
         if(decoded) {
             to_execute = decoded_instr;
             to_execute_type = decoded_instr_type;
@@ -128,7 +129,7 @@ int Arm7tdmi::runa(uint64_t run_to) {
 }
 
 int Arm7tdmi::runt(uint64_t run_to) {
-    while(cycle < run_to && isa_state == THUMB) {
+    while(cycle < run_to && r.get_isa_state() == THUMB) {
         if(decoded) {
             to_execute = decoded_instr;
             to_execute_type = decoded_instr_type;
@@ -246,11 +247,11 @@ uint64_t Arm7tdmi::op_bx(uint32_t opcode) {
     flush_pipeline();
     if(r[f.reg].ureg & 1) {
         r[15].ureg = (r[f.reg].ureg & 0xfffffffe);
-        isa_state = THUMB;
+        r.set_isa_state(THUMB);
     }
     else {
         r[15].ureg = (r[f.reg].ureg & 0xfffffffc);
-        isa_state = ARM;
+        r.set_isa_state(ARM);
     }
     return 3; //2S + 1N cycles
 }
@@ -302,39 +303,37 @@ uint64_t Arm7tdmi::op_alu(uint32_t opcode) {
     }
 
     switch(sf.operation) {
-        case 0x00:
+        case 0x00: //AND
             break;
-        case 0x01:
+        case 0x01: //EOR
             break;
-        case 0x01:
+        case 0x02: //SUB
             break;
-        case 0x02:
+        case 0x03: //RSB
             break;
-        case 0x03:
+        case 0x04: //ADD
             break;
-        case 0x04:
+        case 0x05: //ADC
             break;
-        case 0x05:
+        case 0x06: //SBC
             break;
-        case 0x06:
+        case 0x07: //RSC
             break;
-        case 0x07:
+        case 0x08: //TST
             break;
-        case 0x08:
+        case 0x09: //TEQ
             break;
-        case 0x09:
+        case 0x0A: //CMP
             break;
-        case 0x0A:
+        case 0x0B: //CMN
             break;
-        case 0x0B:
+        case 0x0C: //ORR
             break;
-        case 0x0C:
+        case 0x0D: //MOV
             break;
-        case 0x0D:
+        case 0x0E: //BIC
             break;
-        case 0x0E:
-            break;
-        case 0x0F:
+        case 0x0F: //MVN
             break;
     }
 
@@ -378,7 +377,7 @@ uint64_t Arm7tdmi::op_branch(uint32_t opcode) {
     else if(I==1) opname = "bl";
     cout<<hex<<r[15].ureg-8<<"\t <op_branch> "<<opcode<<" (ARM)  "<<opname<<"  "<<r[15].ureg + offset + 4<<endl;
 
-    if(isa_state == THUMB) {
+    if(r.get_isa_state() == THUMB) {
         if(I == 1) { //BL
             r[14].ureg = r[15].ureg - 2;
         }
@@ -410,4 +409,42 @@ uint64_t Arm7tdmi::op_blktrans(uint32_t opcode) {
     cout<<hex<<r[15].ureg-8<<"\t<op_blktrans> Opcode: "<<opcode<<" Funct variant: "<<I<<"\n";
     return 4;
 }
+
+Arm7tdmi::regbank::regbank() : priv_mode(Arm7tdmi::SYS), isa_state(Arm7tdmi::ARM) {
+    for(int i=0;i<7;i++) {
+        cur_reg[i] = &r[i+8];
+    }
+    cur_psr = &cpsr;
+}
+
+Arm7tdmi::reg& Arm7tdmi::regbank::operator[](uint32_t index) {
+    assert(index >= 0 && index <= 15);
+    if(index < 8 || index == 15) {
+        return r[index];
+    }
+    else if(index < 15) {
+        return *(cur_reg[index - 8]);
+    }
+
+    throw std::string("Dude, where's my car??");
+}
+
+//TODO: ALL of these need to have the right register-banking behavior implemented
+Arm7tdmi::state Arm7tdmi::regbank::get_isa_state() {return isa_state;}
+Arm7tdmi::mode Arm7tdmi::regbank::get_priv_mode() {return priv_mode;}
+bool Arm7tdmi::regbank::get_fiq_disable() {return cpsr.fiq_disable;}
+bool Arm7tdmi::regbank::get_irq_disable() {return cpsr.irq_disable;}
+bool Arm7tdmi::regbank::get_overflow() {return cpsr.overflow;}
+bool Arm7tdmi::regbank::get_carry() {return cpsr.carry;}
+bool Arm7tdmi::regbank::get_zero() {return cpsr.zero;}
+bool Arm7tdmi::regbank::get_sign() {return cpsr.sign;}
+
+void Arm7tdmi::regbank::set_isa_state(state s) {isa_state = s;}
+void Arm7tdmi::regbank::set_priv_mode(mode m) {priv_mode = m;}
+void Arm7tdmi::regbank::set_fiq_disable(bool f) {cpsr.fiq_disable = f;}
+void Arm7tdmi::regbank::set_irq_disable(bool i) {cpsr.irq_disable = i;}
+void Arm7tdmi::regbank::set_overflow(bool o) {cpsr.overflow = o;}
+void Arm7tdmi::regbank::set_carry(bool c) {cpsr.carry = c;}
+void Arm7tdmi::regbank::set_zero(bool z) {cpsr.zero = z;}
+void Arm7tdmi::regbank::set_sign(bool s) {cpsr.sign = s;}
 
